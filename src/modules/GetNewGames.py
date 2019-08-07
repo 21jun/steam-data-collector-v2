@@ -1,0 +1,109 @@
+import odbc
+import numpy as np
+from src.api import ISteamApps
+import re
+
+
+class GetNewAppid:
+
+    def __init__(self):
+        connect = odbc.odbc('oasis')
+        db = connect.cursor()
+        self.db = db
+
+    def __db_reconnect(self):
+        connect = odbc.odbc('oasis')
+        db = connect.cursor()
+        self.db = db
+
+    def __db_get_data_from_src_table(self, col, src_table='applist'):
+        sql = 'SELECT ' + str(col) + ' FROM oasis.' + str(src_table)
+        self.db.execute(sql)
+        data = self.db.fetchall()
+        return data
+
+    def __db_delete_duplicated_appid_rows(self):
+        sql = """
+        DELETE FROM oasis.watching_games 
+            WHERE
+                id NOT IN (SELECT 
+                    *
+                FROM
+                    (SELECT 
+                        MAX(id) AS id
+                    FROM
+                        oasis.watching_games
+                    GROUP BY appid) A)
+        """
+        self.db.execute(sql)
+
+    def __db_insert_dist_table(self, data, dist='watching_games'):
+        # regular expression
+        p = re.compile('[a-zA-z가-힣\s\w]')
+
+        sql_dist = 'INSERT INTO oasis.' + str(dist) + ' (appid, name) VALUES ("%d","%s")'
+        for app in data:
+            print(app[0], ''.join(p.findall(app[1])))
+            self.db.execute(sql_dist % (int(app[0]), ''.join(p.findall(app[1]))))
+
+    def api_update_new_games(self):
+        """
+        Starting point (entry)
+        """
+        # reconnect database
+        # 너무 오랜시간동안 db 접근이 없으면 Connection Error 가 발생함
+        # 업데이트 시작전에 재접속으로 해결
+        self.__db_reconnect()
+
+        # fetch data
+        old_applist_appid = self.__db_get_data_from_src_table('appid', 'applist')
+        new_applist = ISteamApps.GetAppList.api_get_app_list()
+
+        # refine data
+        old_data_appid = np.array(old_applist_appid).ravel()
+
+        new_data_appid = []
+        new_data_name = []
+        for app in new_applist:
+            new_data_appid.append(app['appid'])
+            new_data_name.append(app['name'])
+        new_data_appid = np.array(new_data_appid)
+
+        # get new appids
+        # setdiff1d(A, B) returns `relative complement` from A to B (order matters)
+        new_appids = np.setdiff1d(new_data_appid, old_data_appid)
+        print(len(new_appids))
+
+        hash_table = {}
+        for d in new_applist:
+            hash_table[d['appid']] = d['name']
+
+        result = []
+        for app in new_appids:
+            # result.append({"appid": app, "name": hash_table[app]})
+            result.append((app, hash_table[app]))
+
+        # update watching_games table
+        # also delete duplicate rows using group by keyword
+        self.__db_insert_dist_table(data=result, dist='watching_games')
+        self.__db_delete_duplicated_appid_rows()
+
+        # update applist table
+        update_app_list = ISteamApps.GetAppList()
+        update_app_list.db_update_app_list()
+        # 아래 쿼리를 응용해서 삭제된 appid 들에 대한 검증이 필요
+        # app_current_players2 에서 아래 퀴리의 결과들을 지워줘야할 것임
+        '''
+        SELECT
+            A.appid
+        FROM
+            (SELECT
+                *
+            FROM
+                flask.app_current_players2
+            GROUP BY appid) A
+                LEFT JOIN
+            steamdb.applist B ON A.appid = B.appid
+        WHERE
+            B.name IS NULL
+        '''
