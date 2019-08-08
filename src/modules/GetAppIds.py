@@ -9,7 +9,7 @@ How to use:
 
 
 def __db_get_data_from_src_table(sql):
-    connect = pymysql.connect(host='localhost', user='root', password='1qazxc', db='oasis', port=3306)
+    connect = pymysql.connect(host='localhost', user='root', password='1qazxc', db='oasis', autocommit=True, port=3306)
     db = connect.cursor()
     db.execute(sql)
     r = db.fetchall()
@@ -19,7 +19,7 @@ def __db_get_data_from_src_table(sql):
 def db_update_dist_table(src, dist):
     sql_src = 'select max(id_num), title from oasis.' + str(src) + ' group by title'
     data = __db_get_data_from_src_table(sql_src)
-    connect = pymysql.connect(host='localhost', user='root', password='1qazxc', db='oasis', port=3306)
+    connect = pymysql.connect(host='localhost', user='root', password='1qazxc', db='oasis', autocommit=True, port=3306)
     db = connect.cursor()
     db.execute('TRUNCATE oasis.' + str(dist))
     sql_dist = 'INSERT INTO oasis.' + str(dist) + ' (appid, name) VALUES ("%d","%s")'

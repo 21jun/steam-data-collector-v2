@@ -18,7 +18,7 @@ class TS_DataBase_Conn(DataBaseConnector):
         self.date = date_pass()
         self.repeat = 0
 
-        self.__db_
+        # self.__db_
 
 
     def __db_insert_data(self, games):

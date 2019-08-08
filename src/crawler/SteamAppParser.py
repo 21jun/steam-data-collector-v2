@@ -10,12 +10,12 @@ import time
 class SP_DataBaseConnector:
 
     def __init__(self):
-        connect = pymysql.connect(host='localhost', user='root', password='1qazxc', db='oasis', port=3306)
+        connect = pymysql.connect(host='localhost', user='root', password='1qazxc', db='oasis', autocommit=True, port=3306)
         db = connect.cursor()
         self.db = db
 
     def db_reconnect(self):
-        connect = pymysql.connect(host='localhost', user='root', password='1qazxc', db='oasis', port=3306)
+        connect = pymysql.connect(host='localhost', user='root', password='1qazxc', db='oasis', autocommit=True, port=3306)
         db = connect.cursor()
         self.db = db
 
@@ -43,19 +43,21 @@ class SP_DataBaseConnector:
                                int(data['all_review']['positive_percentage']),
                                data['tags'], data['date']))
 
+
     def db_update_app_data(self, data):
 
         try:
             self.__db_insert_data(data)
             print(data['appid'], data['name'])
         except:
+            print("############ DB ERROR ############ ")
             pass
         print('--------------------------')
 
 
 class HeadlessChrome:
 
-    def __init__(self, driver_path='C:/chromedriver_win32/chromedriver'):
+    def __init__(self, driver_path='C:/chromedriver_win32/chromedriver.exe'):
         self.driverPath = driver_path
         self.driver = self.__load_webdriver()
         self.soup = None
@@ -74,6 +76,7 @@ class HeadlessChrome:
         options.add_argument('headless')
         options.add_argument('window-size=1920x1080')
         options.add_argument('disable-gpu')
+        options.add_argument('disable-web-security')
         driver = webdriver.Chrome(self.driverPath, chrome_options=options)
         driver.implicitly_wait(3)
         return driver

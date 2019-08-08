@@ -1,3 +1,5 @@
+import os, sys
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 from src.utills.UrlGenerator import url_generator
 from src.crawler import SteamAppParser
 
