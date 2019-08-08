@@ -1,6 +1,5 @@
 from src.utills.UrlGenerator import url_generator
 from src.crawler import SteamAppParser
-import logging as log
 
 
 def page_parser(data_base, table):
@@ -9,7 +8,7 @@ def page_parser(data_base, table):
     crawler = SteamAppParser.HeadlessChrome('C:/chromedriver_win32/chromedriver')
 
     for idx, app in enumerate(apps):
-        
+
         # headless chrome 이 도중 연결이 끊길때를 대비하여 100번마다 재접속
         # 만약 스케쥴러로 이 작업을 반복한다면 db_reconnect 도 고려해야함 (loop 밖에서)
         if idx % 100 == 0:
@@ -23,10 +22,9 @@ def page_parser(data_base, table):
         print("currently working on:", info['appid'], info['name'])
 
         try:
-            log.info("try soup")
+
             soup = crawler.parse_url(url_generator(info['appid']))
 
-            log.info("try get_info()")
             result = SteamAppParser.GetAppInfo(soup, info).get_info()
 
             print(result)
@@ -39,9 +37,7 @@ def page_parser(data_base, table):
 
 if __name__ == "__main__":
     # initialize
-    log.basicConfig(filename='./log.txt', level=log.DEBUG)
-    formatter = log.Formatter('[%(levelname)s] (%(filename)s:%(lineno)d) > %(message)s')
-    data_base = SteamAppParser.DataBaseConnector()
+    data_base = SteamAppParser.SP_DataBaseConnector()
 
     # 3700+ 개의 게임을 한번에 수집시키면 도중에 web driver 가 멈추곤함
     # 크롤러는 700개정도의 게임을 연속으로 수집한 후에 에러 발생 (재접속등을 고려해야함)

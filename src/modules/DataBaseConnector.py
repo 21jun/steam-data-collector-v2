@@ -1,15 +1,14 @@
-import odbc
-
+import pymysql
 
 class DataBaseConnector:
 
     def __init__(self):
-        connect = odbc.odbc('oasis')
+        connect = pymysql.connect(host='localhost', user='root', password='1qazxc', db='oasis', port=3306)
         db = connect.cursor()
         self.db = db
 
     def db_reconnect(self):
-        connect = odbc.odbc('oasis')
+        connect = pymysql.connect(host='localhost', user='root', password='1qazxc', db='oasis', port=3306)
         db = connect.cursor()
         self.db = db
 

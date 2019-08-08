@@ -1,7 +1,7 @@
 import requests
-import odbc
+import pymysql
 import re
-import tqdm
+
 """
 How to use:
 1. get GetAppList instance
@@ -11,7 +11,7 @@ How to use:
 
 class GetAppList:
     def __init__(self):
-        connect = odbc.odbc('oasis')
+        connect = pymysql.connect(host='localhost', user='root', password='1qazxc', db='oasis', port=3306)
         db = connect.cursor()
         self.db = db
 
@@ -53,7 +53,7 @@ class GetAppList:
             name = ''.join(p.findall(app['name']))
             try:
                 self.db.execute(sql % (appid, name))
-            except odbc.opError:
+            except:
                 print("db Error (maybe emoji problem)")
             print(app)
 

@@ -1,5 +1,5 @@
 import requests
-import odbc
+import pymysql
 import time
 from json import JSONDecodeError
 import src.utills.dateFormatter as dF
@@ -9,7 +9,8 @@ from datetime import datetime
 class GetNumberOfCurrentPlayers:
 
     def __init__(self):
-        connect = odbc.odbc('oasis')
+        connect = pymysql.connect(host='localhost', user='root', password='1qazxc', db='oasis', port=3306)
+        # connect = odbc.odbc('oasis')
         db = connect.cursor()
         self.db = db
 
