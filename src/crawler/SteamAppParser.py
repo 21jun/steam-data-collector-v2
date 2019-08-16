@@ -87,6 +87,7 @@ class HeadlessChrome:
     def __age_check(self):
 
         if 'agecheck' in self.driver.current_url:
+            print(f"age checking {self.driver.current_url}")
             el = self.driver.find_element_by_name('ageYear')
             for option in el.find_elements_by_tag_name('option'):
                 if option.text == '1980':
@@ -105,8 +106,9 @@ class HeadlessChrome:
     def __get_soup(self):
         html = self.driver.page_source
         soup = BeautifulSoup(html, 'html.parser')
-        # print(soup)
         return soup
+
+
 
     # Core
     def parse_url(self, url):
@@ -116,8 +118,11 @@ class HeadlessChrome:
             self.__age_check()
         except:
             return TimeoutError
-        self.soup = self.__get_soup()
-        return self.soup
+        try:
+            self.soup = self.__get_soup()
+            return self.soup
+        except:
+            return None
 
 
 class GetAppInfo:
