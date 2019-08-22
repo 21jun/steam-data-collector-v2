@@ -262,4 +262,4 @@ class GetAppInfo:
             }
             return result
         except:
-            return TimeoutError
+            return None

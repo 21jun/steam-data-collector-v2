@@ -11,7 +11,7 @@ def page_parser(data_base, table):
 
     for idx, app in enumerate(apps):
 
-        # headless chrome 이 도중 연결이 끊길때를 대비하여 100번마다 재접속
+        # headless chrome 이 도중 연결이 끊길때를 대비하여 30번마다 재접속
         # 만약 스케쥴러로 이 작업을 반복한다면 db_reconnect 도 고려해야함 (loop 밖에서)
         if idx % 30 == 0:
             crawler.reconnect()
@@ -24,17 +24,22 @@ def page_parser(data_base, table):
         print("currently working on:", info['appid'], info['name'])
 
         try:
+            # Soup Process
             soup = crawler.parse_url(url_generator(info['appid']))
             if soup == None:
                 print(f"can't soup this app{info['appid']}")
                 continue
+
+            # Parsing Process
             result = SteamAppParser.GetAppInfo(soup, info).get_info()
+            if result == None:
+                print(f"can't get result this app{info['appid']}")
+                continue
 
             print(result)
-
+            # DB insert Process
             data_base.db_update_app_data(result)
-        except TimeoutError:
-            print("TIME OUT")
+
         except:
             continue
 
